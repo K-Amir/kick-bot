@@ -13,7 +13,7 @@ jobs:
         with:
           host: 159.223.20.60
           username: root
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.SSH_PRIV }}
           script: |
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
