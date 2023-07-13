@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { ChatService } from '../services/chat.service';
+import { Message, UserBackgroundColor } from '../utils/chat.types';
 
 @Component({
   selector: 'app-chat',
@@ -9,44 +11,61 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class ChatComponent implements OnInit {
   private channelName!: string;
-  private channelId!: number;
-  public messages: any[] = [];
-  @ViewChild('myElem') element!: ElementRef;
 
-  constructor(private route: ActivatedRoute, private httpClient: HttpClient) {}
+  public usersBackgroundColor: UserBackgroundColor = {};
+
+  public messages: any[] = [];
+
+  @ViewChild('lastMessage') lastMessage!: ElementRef;
+
+  constructor(
+    private route: ActivatedRoute,
+    private chatService: ChatService
+  ) {}
 
   ngOnInit(): void {
     this.channelName = this.route.snapshot.params['channel'];
-    this.getChannelId().then(() => {
-      this.getChatMessages();
-    });
-
-    setInterval(() => {
-      this.getChatMessages();
-    }, 1500);
-  }
-
-  getChannelId() {
-    return new Promise<void>((resolve) => {
-      this.httpClient
-        .get(`https://kick.com/api/v1/channels/${this.channelName}`)
-        .subscribe((res: any) => {
-          this.channelId = res.id;
-          resolve();
-        });
+    this.chatService.getChannelId(this.channelName).subscribe((channelId) => {
+      setInterval(() => {
+        this.fetchMessages(channelId);
+      }, 1000);
     });
   }
 
-  getChatMessages() {
-    this.httpClient
-      .get(`https://kick.com/api/v2/channels/${this.channelId}/messages`)
-      .subscribe((res: any) => {
-        this.messages = res.data.messages;
-        this.messages = this.messages.reverse();
-        console.log(this.messages);
-        this.element.nativeElement.scrollIntoView({
-          behavior: 'smooth',
-        });
-      });
+  fetchMessages(channelId: number) {
+    this.chatService.getChatMessages(channelId).subscribe((messages) => {
+      const chatMessages = messages.reverse();
+      this.evaluateCommands(messages);
+      this.scrollToLastMessage();
+      this.messages = chatMessages;
+    });
+  }
+
+  evaluateCommands(messages: Message[]) {
+    messages.forEach((m) => {
+      if (m.content.startsWith('!bg')) {
+        this.setUserCustomBackground(m);
+      }
+    });
+  }
+
+  setUserCustomBackground(message: Message) {
+    this.usersBackgroundColor[message.sender.username] =
+      message.content.slice(4);
+  }
+
+  calcUserBackground(username: string) {
+    const userBackgroundColor = this.usersBackgroundColor[username];
+    if (!userBackgroundColor) return;
+    return {
+      backgroundColor: this.usersBackgroundColor[username],
+    };
+  }
+
+  scrollToLastMessage() {
+    if (!this.lastMessage) return;
+    this.lastMessage.nativeElement.scrollIntoView({
+      behavior: 'smooth',
+    });
   }
 }

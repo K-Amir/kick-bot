@@ -1,7 +1,8 @@
 <div class="flex flex-col items-center" *ngIf="messages.length > 0">
   <div
     *ngFor="let message of messages; let i = index"
-    class="my-4 w-max p-2 rounded relative bg-slate-700"
+    class="my-4 w-full p-2 rounded relative bg-slate-700"
+    [ngStyle]="calcUserBackground(message.sender.username)"
   >
     <div class="w-8 h-8 absolute right-1 top-1 rounded overflow-hidden"></div>
     <div
@@ -14,7 +15,7 @@
     </ng-container>
 
     <ng-container *ngIf="i + 1 === messages.length">
-      <p #myElem class="w-40 max-w-full text-white text-md">
+      <p #lastMessage class="w-40 max-w-full text-white text-md">
         {{ message.content }}
       </p>
     </ng-container>
