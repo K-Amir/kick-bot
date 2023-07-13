@@ -1,0 +1,28 @@
+name: Deploy to DigitalOcean Droplet
+'on':
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to DigitalOcean Droplet
+        uses: appleboy/ssh-action@master
+        with:
+          host: 159.223.20.60
+          username: root
+          key: ${{ secrets.SSH_PRIV }}
+          script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            rm -rf kick-bot
+            mkdir kick-bot
+            cd kick-bot
+            git clone git@github.com:K-Amir/kick-bot.git
+            echo 'Deployment to digital ocean finished'
+            npm  install
+            ng build
+            cd dist
+            cp -r ./* /var/www/html/
