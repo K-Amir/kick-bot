@@ -1,0 +1,22 @@
+<div class="flex flex-col items-center" *ngIf="messages.length > 0">
+  <div
+    *ngFor="let message of messages; let i = index"
+    class="my-4 w-max p-2 rounded relative bg-slate-700"
+  >
+    <div class="w-8 h-8 absolute right-1 top-1 rounded overflow-hidden"></div>
+    <div
+      class="absolute -top-3 -left-0 font-bold bg-slate-200 text-black p-0.5 px-2 rounded text-xs"
+    >
+      {{ message.sender.username }}
+    </div>
+    <ng-container *ngIf="i + 1 !== messages.length">
+      <p class="w-40 max-w-full text-white text-md">{{ message.content }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="i + 1 === messages.length">
+      <p #myElem class="w-40 max-w-full text-white text-md">
+        {{ message.content }}
+      </p>
+    </ng-container>
+  </div>
+</div>
